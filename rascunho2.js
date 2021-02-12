@@ -63,7 +63,7 @@ let empresa1 = new Empresa(resultado2[0].name,resultado2[0].adminUser,resultado2
 let admin1 = new Administrador(empresa1.admin.name,empresa1.admin.email,empresa1.empregados)
 
 
-//console.log(admin1)
+console.log(admin1)
 
 let resultado3 =  db.companies.reduce(function(estado, colaborador){
    let interno = colaborador.employees.filter(function(funcionario){
