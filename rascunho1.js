@@ -15,11 +15,13 @@ class Companies {
             this.currentUserIndex = company.employees.findIndex(employee => employee.email === email && employee.password === password)
             return this.currentUserIndex >= 0
         })
+        return new Employee(this.companies[this.currentCompanyIndex].employees[this.currentUserIndex])
     }
     loginAdminUser(email, password) {
         this.currentAdminCompanyIndex = this.companies.findIndex(company => {
             return company.adminUser.email === email && company.adminUser.password === password
         })
+        return new AdminUser(this.companies[this.currentAdminCompanyIndex].adminUser)
     }
 }
 
@@ -44,20 +46,18 @@ class AdminUser extends User {
 
 let db = new Companies(JSON.parse(fs.readFileSync('db.json').toString()))
 
+console.log(db)
+
 // --------- login user
 
 const currentEmail = "pietro.ribeiro@letscode.com.br"
 const currentPassword = "12345"
 
-db.loginEmployee(currentEmail, currentPassword) // <-
-
-let user = new Employee(db.companies[db.currentCompanyIndex].employees[db.currentUserIndex])
+let user = db.loginEmployee(currentEmail, currentPassword)
 
 // --------- login admin
 
-db.loginAdminUser('felipe.paiva@letscode.com.br', 'SENHA123')
-
-let admin = new AdminUser(db.companies[db.currentAdminCompanyIndex].adminUser)
+let admin = db.loginAdminUser('felipe.paiva@letscode.com.br', 'SENHA123')
 
 // --------- test
 
