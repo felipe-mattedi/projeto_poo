@@ -2,11 +2,11 @@ const fs = require('fs')
 const input = require('readline-sync')
 const moment = require('moment')
 
-// --------- dados
+// --------- main classes
 
 class Companies {
-    constructor(json) {
-        Object.assign(this, json);
+    constructor(jsonFilePath) {
+        Object.assign(this, JSON.parse(fs.readFileSync(jsonFilePath).toString()));
         this.currentUserIndex
         this.currentCompanyIndex
         this.currentAdminCompanyIndex
@@ -22,7 +22,7 @@ class Companies {
         this.currentAdminCompanyIndex = this.companies.findIndex(company => {
             return company.adminUser.email === email && company.adminUser.password === password
         })
-        return new AdminUser(this.companies[this.currentAdminCompanyIndex].adminUser)
+        return new AdminUser(this.companies[this.currentAdminCompanyIndex])
     }
 }
 
@@ -61,16 +61,28 @@ class AdminUser extends User {
     constructor(object) {
         super(object)
     }
+    getAllEmployeesObject() {
+        return this.employees
+    }
+    getAllEmployeesNumberedList() {
+        return this.getAllEmployeesObject().reduce((acc, employee, index) => `${acc}\n${index + 1}. ${employee.name}`, '')
+    }
+    getSingleEmployeeObject(employeeIndex) {
+        return new Employee(this.getAllEmployeesObject()[employeeIndex])
+    }
+    getSingleEmployeeAttendanceInfo(employeeIndex) {
+        return this.getSingleEmployeeObject(employeeIndex).attendanceInfo
+    }
 }
 
-let db = new Companies(JSON.parse(fs.readFileSync('db.json').toString()))
+// --------- get data from db file
 
-console.log(db)
+let db = new Companies('db.json')
 
 // --------- login user
 
-const currentEmail = "lucas.rios@letscode.com.br"
-const currentPassword = "52345"
+const currentEmail = "pietro.ribeiro@letscode.com.br"
+const currentPassword = "12345"
 
 let user = db.loginEmployee(currentEmail, currentPassword)
 
@@ -80,6 +92,7 @@ let admin = db.loginAdminUser('felipe.paiva@letscode.com.br', 'SENHA123')
 
 // --------- test
 
-console.log(user)
-console.log(admin)
+// console.log(user)
+console.log(admin.getAllEmployeesNumberedList())
+console.log(admin.getSingleEmployeeAttendanceInfo(0))
 user.recuperarEspelhoPonto()
