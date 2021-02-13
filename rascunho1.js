@@ -1,6 +1,5 @@
 const fs = require('fs')
 const input = require('readline-sync')
-const moment = require('moment')
 
 // --------- dados
 
@@ -16,13 +15,11 @@ class Companies {
             this.currentUserIndex = company.employees.findIndex(employee => employee.email === email && employee.password === password)
             return this.currentUserIndex >= 0
         })
-        return new Employee(this.companies[this.currentCompanyIndex].employees[this.currentUserIndex])
     }
     loginAdminUser(email, password) {
         this.currentAdminCompanyIndex = this.companies.findIndex(company => {
             return company.adminUser.email === email && company.adminUser.password === password
         })
-        return new AdminUser(this.companies[this.currentAdminCompanyIndex].adminUser)
     }
 }
 
@@ -37,24 +34,6 @@ class Employee extends User {
     constructor(object) {
         super(object)
     }
-    registrarEntrada(){}
-    registrarSaida(){}
-    
-    recuperarEspelhoPonto(){ 
-        var dict = {"in" : "Entrada", "out":"Saída  "}
-        console.log(`Registros de ponto do funcionário:
--------------------------------
-  ${this.name}
-  ${this.email}
--------------------------------
-  DATA   |    TIPO   |  HORÁRIO`)
-        for (let registro of this.attendanceInfo){
-        let data = new Date(Date.parse(registro.date))
-        let dia = moment(data).format('l')
-        let hora = moment(data).format('LTS')
-        console.log(`${dia} |   ${dict[registro.type]} |  ${hora}`)
-        }
-    }
 }
 
 class AdminUser extends User {
@@ -65,21 +44,22 @@ class AdminUser extends User {
 
 let db = new Companies(JSON.parse(fs.readFileSync('db.json').toString()))
 
-console.log(db)
-
 // --------- login user
 
-const currentEmail = "lucas.rios@letscode.com.br"
-const currentPassword = "52345"
+const currentEmail = "pietro.ribeiro@letscode.com.br"
+const currentPassword = "12345"
 
-let user = db.loginEmployee(currentEmail, currentPassword)
+db.loginEmployee(currentEmail, currentPassword) // <-
+
+let user = new Employee(db.companies[db.currentCompanyIndex].employees[db.currentUserIndex])
 
 // --------- login admin
 
-let admin = db.loginAdminUser('felipe.paiva@letscode.com.br', 'SENHA123')
+db.loginAdminUser('felipe.paiva@letscode.com.br', 'SENHA123')
+
+let admin = new AdminUser(db.companies[db.currentAdminCompanyIndex].adminUser)
 
 // --------- test
 
 console.log(user)
 console.log(admin)
-user.recuperarEspelhoPonto()
