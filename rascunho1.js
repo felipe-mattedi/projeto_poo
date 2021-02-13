@@ -1,5 +1,6 @@
 const fs = require('fs')
 const input = require('readline-sync')
+const moment = require('moment')
 
 // --------- dados
 
@@ -36,6 +37,24 @@ class Employee extends User {
     constructor(object) {
         super(object)
     }
+    registrarEntrada(){}
+    registrarSaida(){}
+    
+    recuperarEspelhoPonto(){ 
+        var dict = {"in" : "Entrada", "out":"Saída  "}
+        console.log(`Registros de ponto do funcionário:
+-------------------------------
+  ${this.name}
+  ${this.email}
+-------------------------------
+  DATA   |    TIPO   |  HORÁRIO`)
+        for (let registro of this.attendanceInfo){
+        let data = new Date(Date.parse(registro.date))
+        let dia = moment(data).format('l')
+        let hora = moment(data).format('LTS')
+        console.log(`${dia} |   ${dict[registro.type]} |  ${hora}`)
+        }
+    }
 }
 
 class AdminUser extends User {
@@ -50,8 +69,8 @@ console.log(db)
 
 // --------- login user
 
-const currentEmail = "pietro.ribeiro@letscode.com.br"
-const currentPassword = "12345"
+const currentEmail = "lucas.rios@letscode.com.br"
+const currentPassword = "52345"
 
 let user = db.loginEmployee(currentEmail, currentPassword)
 
@@ -63,3 +82,4 @@ let admin = db.loginAdminUser('felipe.paiva@letscode.com.br', 'SENHA123')
 
 console.log(user)
 console.log(admin)
+user.recuperarEspelhoPonto()
