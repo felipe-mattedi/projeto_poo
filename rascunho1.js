@@ -25,6 +25,24 @@ class Companies {
         })
         return new AdminUser(this.companies[this.currentAdminCompanyIndex])
     }
+    addNewCompany() {
+        console.log('Cadastrar nova empresa')
+        console.log('----------------------')
+        let companyName = input.question('Nome da empresa: ')
+        let adminName = input.question('Nome do admin: ')
+        let adminEmail = input.question('E-mail do admin: ')
+        let adminPassword = input.question('Senha do admin: ')
+        let newCompanyObject = {
+            name: companyName,
+            adminUser: {
+                name: adminName,
+                email: adminEmail,
+                password: adminPassword
+            },
+            employees: []
+        }
+        this.companies.push(newCompanyObject)
+    }
     updateDatabaseFile() {
         fs.writeFileSync(this.currentFilePath, JSON.stringify({ companies: this.companies }))
     }
@@ -111,7 +129,7 @@ let admin = db.loginAdminUser('felipe.paiva@letscode.com.br', 'SENHA123')
 
 // --------- test
 
-console.log(admin.getAllEmployeesNumberedList())
+// console.log(admin.getAllEmployeesNumberedList())
 
 // console.log(admin.getAllEmployeesNumberedList())
 // console.log(admin.getSingleEmployeeAttendanceInfo(0))
@@ -119,6 +137,8 @@ console.log(admin.getAllEmployeesNumberedList())
 // dmin.addNewEmployee()
 // db.updateDatabaseFile()
 
-//console.log(db.companies)
+db.addNewCompany()
+
+console.log(db.companies)
 
 // console.log(db.companies[db.currentAdminCompanyIndex].employees)
