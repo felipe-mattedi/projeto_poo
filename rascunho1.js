@@ -1,5 +1,6 @@
 const fs = require('fs')
 const input = require('readline-sync')
+const moment = require('moment')
 
 // --------- main classes
 
@@ -9,6 +10,7 @@ class Companies {
         this.currentUserIndex
         this.currentCompanyIndex
         this.currentAdminCompanyIndex
+        this.currentFilePath = jsonFilePath
     }
     loginEmployee(email, password) {
         this.currentCompanyIndex = this.companies.findIndex(company => {
@@ -23,6 +25,9 @@ class Companies {
         })
         return new AdminUser(this.companies[this.currentAdminCompanyIndex])
     }
+    updateDatabaseFile() {
+        fs.writeFileSync(this.currentFilePath, JSON.stringify({ companies: this.companies }))
+    }
 }
 
 class User {
@@ -35,6 +40,23 @@ class User {
 class Employee extends User {
     constructor(object) {
         super(object)
+    }
+    registrarEntrada(){}
+    registrarSaida(){}
+    recuperarEspelhoPonto(){ 
+        var dict = {"in" : "Entrada", "out":"Saída  "}
+        console.log(`Registros de ponto do funcionário:
+-------------------------------
+  ${this.name}
+  ${this.email}
+-------------------------------
+  DATA   |    TIPO   |  HORÁRIO`)
+        for (let registro of this.attendanceInfo){
+        let data = new Date(Date.parse(registro.date))
+        let dia = moment(data).format('l')
+        let hora = moment(data).format('LTS')
+        console.log(`${dia} |   ${dict[registro.type]} |  ${hora}`)
+        }
     }
 }
 
@@ -52,7 +74,23 @@ class AdminUser extends User {
         return new Employee(this.getAllEmployeesObject()[employeeIndex])
     }
     getSingleEmployeeAttendanceInfo(employeeIndex) {
-        return this.getSingleEmployeeObject(employeeIndex).attendanceInfo
+        return this.getSingleEmployeeObject(employeeIndex).recuperarEspelhoPonto()
+    }
+    addNewEmployee(){
+        console.log('Cadastrar novo funcionário')
+        console.log('--------------------------')
+        let name = input.question('Nome: ')
+        let email = input.question('E-mail: ')
+        let password = input.question('Senha: ')
+        let newEmployeeObject = {
+            name: name,
+            email: email,
+            password: password,
+            attendanceInfo: []
+        }
+        this.employees.push(
+            new Employee(newEmployeeObject)
+        )
     }
 }
 
@@ -73,6 +111,14 @@ let admin = db.loginAdminUser('felipe.paiva@letscode.com.br', 'SENHA123')
 
 // --------- test
 
-// console.log(user)
 console.log(admin.getAllEmployeesNumberedList())
-console.log(admin.getSingleEmployeeAttendanceInfo(0))
+
+// console.log(admin.getAllEmployeesNumberedList())
+// console.log(admin.getSingleEmployeeAttendanceInfo(0))
+
+// dmin.addNewEmployee()
+// db.updateDatabaseFile()
+
+//console.log(db.companies)
+
+// console.log(db.companies[db.currentAdminCompanyIndex].employees)
