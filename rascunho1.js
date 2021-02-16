@@ -132,7 +132,7 @@ let admin = db.loginAdminUser('felipe.paiva@letscode.com.br', 'SENHA123')
 // console.log(admin.getAllEmployeesNumberedList())
 
 // console.log(admin.getAllEmployeesNumberedList())
-// console.log(admin.getSingleEmployeeAttendanceInfo(0))
+admin.getSingleEmployeeAttendanceInfo(0)
 
 // dmin.addNewEmployee()
 // db.updateDatabaseFile()
