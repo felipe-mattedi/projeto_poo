@@ -24,6 +24,7 @@ class Companies {
             return company.adminUser.email === email && company.adminUser.password === password
         })
         return new AdminUser(this.companies[this.currentAdminCompanyIndex])
+
     }
     addNewCompany() {
         console.log('Cadastrar nova empresa')
@@ -92,6 +93,7 @@ class AdminUser extends User {
         return new Employee(this.getAllEmployeesObject()[employeeIndex])
     }
     getSingleEmployeeAttendanceInfo(employeeIndex) {
+
         return this.getSingleEmployeeObject(employeeIndex).recuperarEspelhoPonto()
     }
     addNewEmployee(){
@@ -129,6 +131,7 @@ let admin = db.loginAdminUser('felipe.paiva@letscode.com.br', 'SENHA123')
 
 // --------- test
 
+
 // console.log(admin.getAllEmployeesNumberedList())
 
 // console.log(admin.getAllEmployeesNumberedList())
@@ -142,3 +145,7 @@ db.addNewCompany()
 console.log(db.companies)
 
 // console.log(db.companies[db.currentAdminCompanyIndex].employees)
+
+// console.log(user)
+console.log(admin.getAllEmployeesNumberedList())
+console.log(admin.getSingleEmployeeAttendanceInfo(0))
