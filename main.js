@@ -13,19 +13,19 @@ class Companies {
       this.currentFilePath = jsonFilePath
   }
   loginEmployee(email, password) {
-      this.currentCompanyIndex = this.companies.findIndex(company => {
-          this.currentUserIndex = company.employees.findIndex(employee => employee.email === email && employee.password === password)
-          return this.currentUserIndex >= 0
-      })
-      try { return new Employee(this.companies[this.currentCompanyIndex].employees[this.currentUserIndex]) }
-      catch { input.question(`\nCredenciais inválidas... `)}
+    this.currentCompanyIndex = this.companies.findIndex(company => {
+        this.currentUserIndex = company.employees.findIndex(employee => employee.email === email && employee.password === password)
+        return this.currentUserIndex >= 0
+    })
+    try { return new Employee(this.companies[this.currentCompanyIndex].employees[this.currentUserIndex]) }
+    catch { input.question(`\nCredenciais inválidas... `)}
   }
   loginAdminUser(email, password) {
       this.currentAdminCompanyIndex = this.companies.findIndex(company => {
           return company.adminUser.email === email && company.adminUser.password === password
       })
-      try { return new AdminUser(this.companies[this.currentAdminCompanyIndex]) }
-      catch { input.question(`\nCredenciais inválidas... `)}
+      if (this.currentAdminCompanyIndex >= 0) return new AdminUser(this.companies[this.currentAdminCompanyIndex])
+      else input.question(`\nCredenciais inválidas... `)
   }
   updateAttendance(registro){
     if(registro instanceof attendanceInfo){
@@ -34,26 +34,30 @@ class Companies {
       console.log(`${registro.dict[registro.type]} registrada às ${moment(registro.date).format('HH:mm:ss')}`)
     }
   }
+  updateCompanyEmployees(employees){
+    this.companies[this.currentAdminCompanyIndex].employees = employees
+    this.updateDatabaseFile()
+  }
   addNewCompany() {
-      console.log('----------------------')
-      console.log('Cadastrar nova empresa')
-      console.log('----------------------')
-      let companyName = input.question('Nome da empresa: ')
-      let adminName = input.question('Nome do admin: ')
-      let adminEmail = input.question('E-mail do admin: ')
-      let adminPassword = input.question('Senha do admin: ')
-      let newCompanyObject = {
-          name: companyName,
-          adminUser: {
-              name: adminName,
-              email: adminEmail,
-              password: adminPassword
-          },
-          employees: []
-      }
-      this.companies.push(newCompanyObject)
-      this.updateDatabaseFile()
-      input.question(`\nEmpresa cadastrada com sucesso! `)
+    console.log('----------------------')
+    console.log('Cadastrar nova empresa')
+    console.log('----------------------')
+    let companyName = input.question('Nome da empresa: ')
+    let adminName = input.question('Nome do admin: ')
+    let adminEmail = input.question('E-mail do admin: ')
+    let adminPassword = input.question('Senha do admin: ')
+    let newCompanyObject = {
+        name: companyName,
+        adminUser: {
+            name: adminName,
+            email: adminEmail,
+            password: adminPassword
+        },
+        employees: []
+    }
+    this.companies.push(newCompanyObject)
+    this.updateDatabaseFile()
+    input.question(`\nEmpresa cadastrada com sucesso! `)
   }
   updateDatabaseFile() {
       fs.writeFileSync(this.currentFilePath, JSON.stringify({ companies: this.companies }))
@@ -78,8 +82,14 @@ class Employee extends User {
 
     registrarPonto(){
       let data = new Date().toUTCString()
-      let type = this.attendanceInfo[this.attendanceInfo.length - 1].type === 'out' ? 'in' : 'out'
-      return new attendanceInfo(data,type)   
+      if(typeof(this.attendanceInfo[this.attendanceInfo.length - 1]) === 'undefined' ){
+        let type = 'in'
+        return new attendanceInfo(data,type) 
+      }
+      else{
+        let type = this.attendanceInfo[this.attendanceInfo.length - 1].type === 'out' ? 'in' : 'out'
+        return new attendanceInfo(data,type) 
+      }
     }
 
     recuperarEspelhoPonto(){ 
@@ -187,46 +197,56 @@ class AdminUser extends User {
         return this.employees
     }
     getAllEmployeesNumberedList() {
-        return this.getAllEmployeesObject().reduce((acc, employee, index) => `${acc}\n${index + 1}. ${employee.name}`, '')
+      let list = this.getAllEmployeesObject().reduce((acc, employee, index) => `${acc}\n${index + 1}. ${employee.name}`, '')
+      return list + `\n\n${this.getAllEmployeesObject().length} profissionais encontrados`
     }
     getSingleEmployeeObject(employeeIndex) {
         return new Employee(this.getAllEmployeesObject()[employeeIndex])
     }
     getSingleEmployeeAttendanceInfo(employeeIndex) {
+      if (employeeIndex < this.employees.length) {
         return this.getSingleEmployeeObject(employeeIndex).recuperarEspelhoPonto()
+      }
+      else { input.question('ID inválido....') }
     }
-
     getSingleEmployeeBancodehoras(employeeIndex) {
-      let employee = this.getSingleEmployeeObject(employeeIndex)
-      employee.calcularhorastrabalhadas()
-      employee.calculardiastrabalhados()
-      employee.calcularsaldohoras()
-      return employee.exibebancohoras()
+      if (employeeIndex < this.employees.length) {
+        let employee = this.getSingleEmployeeObject(employeeIndex)
+        employee.calcularhorastrabalhadas()
+        employee.calculardiastrabalhados()
+        employee.calcularsaldohoras()
+        return employee.exibebancohoras()
+      }
+      else { input.question('ID inválido....') }
   }
 
-    addNewEmployee(){
-        console.log('Cadastrar novo funcionário')
-        console.log('--------------------------')
-        let name = input.question('Nome: ')
-        let email = input.question('E-mail: ')
-        let password = input.question('Senha: ')
-        let newEmployeeObject = {
-            name: name,
-            email: email,
-            password: password,
-            attendanceInfo: []
-        }
-        this.employees.push(
-            new Employee(newEmployeeObject)
-        )
+  addNewEmployee(){
+    console.log('----------------------')
+    console.log('Registrar profissional')
+    console.log('----------------------')
+    let name = input.question('Nome: ')
+    let email = input.question('E-mail: ')
+    let password = input.question('Senha: ')
+    let newEmployeeObject = {
+      name: name,
+      email: email,
+      password: password,
+      attendanceInfo: []
     }
+    this.employees.push(
+      new Employee(newEmployeeObject)
+    )
+  }
+  removeEmployee(id){
+    this.employees.splice(id-1,1)
+  }
 }
 
 // --------- menus
 
 const menuMainOptions = ['Login', 'Login (Admin)', 'Registrar nova empresa']
 const menuUserOptions = ['Registrar ponto', 'Espelho de ponto', 'Banco de horas']
-const menuAdminOptions = ['Listar profissionais', 'Registrar profissional', 'Verificar espelho ponto', 'Verificar banco de horas']
+const menuAdminOptions = ['Listar profissionais', 'Registrar profissional', 'Remover profissional', 'Verificar espelho ponto', 'Verificar banco de horas']
 
 class Menu {
   constructor(name, options){
@@ -250,7 +270,6 @@ let db = new Companies('db.json')
 // --------- menus setup
 
 const menuMain = new Menu('Sistema de ponto', menuMainOptions)
-const menuAdmin = new Menu('Sistema de ponto', menuMainOptions)
 
 let select
 let selectInside
@@ -284,7 +303,7 @@ function main() {
             user.exibebancohoras()
           }
         } while (selectInside != 0)
-        console.log(`\nSaindo...`)
+        input.question(`\nSaindo...`)
       }
     }
 
@@ -297,25 +316,31 @@ function main() {
           const menuUser = new Menu(`Olá ${admin.adminUser.name}! (${admin.getName()})`, menuAdminOptions)
           selectInside = menuUser.printMenu()
           if (selectInside == '1') {
-            console.log(admin.getAllEmployeesNumberedList())        
+            input.question(admin.getAllEmployeesNumberedList())        
           }
           else if (selectInside == '2') {
-            
+            admin.addNewEmployee()
+            db.updateCompanyEmployees(admin.getAllEmployeesObject())
           }
           else if (selectInside == '3') {
+            console.log(admin.getAllEmployeesNumberedList())
+            let funcionario = input.question('Digite o ID do funcionário a ser removido: ')
+            admin.removeEmployee(funcionario)
+            db.updateCompanyEmployees(admin.getAllEmployeesObject())
+          }
+          else if (selectInside == '4') {
+            console.log(admin.getAllEmployeesNumberedList())
             let funcionario = input.question('Digite o ID do funcionário a ser pesquisado: ')
             admin.getSingleEmployeeAttendanceInfo(funcionario-1)
           }
-
-          else if (selectInside == '4') {
+          else if (selectInside == '5') {
+            console.log(admin.getAllEmployeesNumberedList())
             let funcionario = input.question('Digite o ID do funcionário a ser pesquisado: ')
             admin.getSingleEmployeeBancodehoras(funcionario-1)
-           
           }
         } while (selectInside != 0)
-        console.log(`\nSaindo...`)
+        input.question(`\nSaindo...`)
       }
-
     }
 
     else if (select == '3'){
